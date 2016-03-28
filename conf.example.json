@@ -1,0 +1,18 @@
+{
+"ircbot":{
+"nick":"Nickname",
+"ident":"Username",
+"realname":"Real name",
+"server":"irc.foo.bar",
+"port":6667,
+"ipv6":true,
+"channels":"#chan1,#chan2",
+"debugmode":false
+},
+"cevents":{
+"admins":[
+"User1",
+"User2"
+]
+}
+}
