@@ -2,16 +2,20 @@ import socket
 import cevents
 import json
 import signal
+import sys
+import os
 
 class IRCBot: #Main bot class
 
  def __init__(self):
   self.config = json.load(open("conf.json", "r"))
   self.config = self.config['ircbot']
+  self.isquitting = False
+  self.parseline = ""
   if self.config['ipv6'] == True:
-   self.ircsock = socket.socket(socket.AF_INET6)
+   self.ircsock = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
   else:
-   self.ircsock = socket.socket()
+   self.ircsock = socket.socket(socket.SOCK_STREAM)
    
  def connect(self):
   self.ircsock.connect((self.config['server'], self.config['port']))
@@ -23,18 +27,24 @@ class IRCBot: #Main bot class
  def mainloop(self):
   for line in self.handle:
    line = line.strip()
+   self.parseline = line.strip()
    if self.config['debugmode'] == True: #Suppresses most server messages if false
     print(line)
    if line.split()[1] == "001":
     print("Connection successful")
     print("JOIN "+self.config['channels'], file=self.handle)
-   elif "PING" in line:
+   elif line.split()[0] == "PING": #Reply to PINGs
     print("PONG :"+line.split(':')[1], file=self.handle)
+    
+   elif line.split()[0] == "ERROR": #If the server disconnects us
+    if self.isquitting == False:
+     print("Disconnected")
+     self.restart()
     
 ##########################
 #Event capturing
 ########################## 
-   elif "PRIVMSG" in line:
+   elif line.split()[1] == "PRIVMSG":
     print(line)
     cevents.commandevent(self, self.config['nick'], line)  
     
@@ -65,9 +75,30 @@ class IRCBot: #Main bot class
   else:
    print("PART "+channel+" :"+message, file=self.handle)
   
- def quit(self, message):
+ def quit(self, message, restart):
+  if restart == True:
+   self.isquitting = False
+  else:
+   self.isquitting = True
   if message == None:
    print("QUIT", file=self.handle)
   else:
    print("QUIT :"+message, file=self.handle)
+   
+ def kick(self, channel, user, message):
+  if message == None:
+   print("KICK "+channel+" "+user, file=self.handle)
+  else:
+   print("KICK "+channel+" "+user+" :"+message, file=self.handle)
+   
+ def getnames(self, channel):
+  print("NAMES "+channel, file=self.handle)
+  if self.parseline.split()[1] == "353":
+   names = self.parseline.split()[5]
+   return names
+   
+ def restart(self):
+  py = sys.executable
+  print("Restarting...")
+  os.execl(py, py, * sys.argv)
   
