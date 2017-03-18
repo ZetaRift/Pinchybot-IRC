@@ -15,7 +15,7 @@ class IRCBot: #Main bot class
   if self.config['ipv6'] == True:
    self.ircsock = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
   else:
-   self.ircsock = socket.socket(socket.SOCK_STREAM)
+   self.ircsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
    
  def connect(self):
   self.ircsock.connect((self.config['server'], self.config['port']))
@@ -96,6 +96,12 @@ class IRCBot: #Main bot class
   if self.parseline.split()[1] == "353":
    names = self.parseline.split()[5]
    return names
+   
+ def ping(self, param):
+  print("PING :"+param, file=self.handle)
+  
+ def nick(self, name):
+  print("NICK "+name, file=self.handle)
    
  def restart(self):
   py = sys.executable
