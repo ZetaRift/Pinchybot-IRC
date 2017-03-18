@@ -67,14 +67,17 @@ def commandevent(botcontext, curnick, data): #Main command event for PRIVMSG eve
 #Regex matching
 ##################
 
- if re.match("(:(?P<nick>\S+)!(?P<hostmask>\S+) (?P<event>\S+) (?P<target>\S+) :(?P<message>.+))", data): #Event with message
-  cmdreg = re.compile("(:(?P<nick>\S+)!(?P<hostmask>\S+) (?P<event>\S+) (?P<target>\S+) :(?P<message>.+))")
-  parseddata = cmdreg.search(data)
+# if re.match("(:(?P<nick>\S+)!(?P<hostmask>\S+) (?P<event>\S+) (?P<target>\S+) :(?P<message>.+))", data): #Event with message
+#  cmdreg = re.compile("(:(?P<nick>\S+)!(?P<hostmask>\S+) (?P<event>\S+) (?P<target>\S+) :(?P<message>.+))")
+#  parseddata = cmdreg.search(data)
+ user = data.split()[0]
+ msgnick = user.rsplit("!", 1)
+ msgnick = msgnick[0].strip(":")
+ target = data.split()[2]
+ message = data.rsplit(":", 1)
+ message = message[1]
  urlreg = re.compile("(https?://\S+)")
- url = urlreg.search(parseddata.group("message"))
- target = parseddata.group("target")
- msgnick = parseddata.group("nick")
- message = parseddata.group("message")
+ url = urlreg.search(message)
  
  rstatus = blist(msgnick) #Checks if a user is whitelisted
  if rstatus == True:
@@ -144,6 +147,11 @@ def commandevent(botcontext, curnick, data): #Main command event for PRIVMSG eve
      else:
       botcontext.notice(msgnick, "Permission denied")
       
+    elif cmd == "nick":
+     if msgnick in conf['admins']:
+      botcontext.nick(args)
+     else:
+      botcontext.notice(msgnick, "Permission denied")
 
     
 ############################
