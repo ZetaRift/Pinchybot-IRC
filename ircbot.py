@@ -32,14 +32,20 @@ class IRCBot: #Main bot class
     print(line)
    if line.split()[1] == "001":
     print("Connection successful")
-    print("JOIN "+self.config['channels'], file=self.handle)
+    self.cjoin(self.config['channels'])
+    print("PRIVMSG NICKSERV :IDENTIFY "+self.config['nickservpass'], file=self.handle)
    elif line.split()[0] == "PING": #Reply to PINGs
     print("PONG :"+line.split(':')[1], file=self.handle)
     
    elif line.split()[0] == "ERROR": #If the server disconnects us
     if self.isquitting == False:
      print("Disconnected")
-     self.restart()
+     sys.exit(5)
+     
+   elif line == '': #No more data
+    if self.isquitting == False:
+     print("Abnormal disconnect, restarting")
+     sys.exit(5)
     
 ##########################
 #Event capturing
@@ -66,10 +72,10 @@ class IRCBot: #Main bot class
  def notice(self, target, message):
   print("NOTICE "+target+" :"+message, file=self.handle)
   
- def join(self, channel):
+ def cjoin(self, channel):
   print("JOIN "+channel, file=self.handle)
   
- def part(self, channel, message):
+ def cpart(self, channel, message):
   if message == None:
    print("PART "+channel, file=self.handle)
   else:
