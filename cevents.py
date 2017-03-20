@@ -57,11 +57,32 @@ def blist(user):
 			rstatus = False
 			return rstatus
 
-  
+def parsemessage(m):
+ c = ''
+ for i in m:
+  c+=i+" "
+ c = c.strip(":")
+ c = c.strip()
+ return c
 
+class Roulette:
+ def __init__(self):
+  self.chamber = 6
+  
+ def reset(self):
+  self.chamber = 6
+  
+ def fire(self):
+  trig = random.randint(1, self.chamber)
+  if trig == self.chamber: #Bullet chamber
+   self.chamber = 6
+   return True
+  else:
+   self.chamber -= 1
+   return False
+roulette = Roulette()
 def commandevent(botcontext, curnick, data): #Main command event for PRIVMSG events
  bl_pass = False
- global roulette_chamber
  
 ##################
 #Regex matching
@@ -74,10 +95,11 @@ def commandevent(botcontext, curnick, data): #Main command event for PRIVMSG eve
  msgnick = user.rsplit("!", 1)
  msgnick = msgnick[0].strip(":")
  target = data.split()[2]
- message = data.rsplit(":", 1)
- message = message[1]
+ message = parsemessage(data.split()[3:])
  urlreg = re.compile("(https?://\S+)")
  url = urlreg.search(message)
+ if url:
+  print(url.group(0))
  
  rstatus = blist(msgnick) #Checks if a user is whitelisted
  if rstatus == True:
@@ -131,13 +153,10 @@ def commandevent(botcontext, curnick, data): #Main command event for PRIVMSG eve
      botcontext.act(target, "hugs "+msgnick)
      
     elif cmd == "roulette":
-     trig = random.randint(1, roulette_chamber)
-     if trig == roulette_chamber:
-      roulette_chamber = 6
+     if roulette.fire() == True:
       botcontext.msg(target, "*BANG*")
       botcontext.kick(target, msgnick, "Lost at roulette")
      else:
-      roulette_chamber -= 1
       botcontext.msg(target, "*click*")
       
       
@@ -153,6 +172,12 @@ def commandevent(botcontext, curnick, data): #Main command event for PRIVMSG eve
      else:
       botcontext.notice(msgnick, "Permission denied")
 
+    elif cmd == "csay":
+     if msgnick in conf['admins']:
+      params = args[0:].split(" ", 1)
+      botcontext.msg(params[0], params[1])
+     else:
+      botcontext.notice(msgnick, "Permission denied")
     
 ############################
 #Start of raw commands
