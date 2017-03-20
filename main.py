@@ -11,6 +11,7 @@ def pyvercheck():
 
 def run():
  pyvercheck()
+ print("Child PID: "+str(os.getpid()))
  try:
   import ircbot
  except ImportError:
@@ -24,4 +25,14 @@ def run():
 
 
 if __name__ == "__main__":
- run()
+ print("Master PID:"+str(os.getpid()))
+ do_fork = True
+ while do_fork:
+  cpid = os.fork()
+  if cpid == 0:
+   run()
+  pid, status = os.waitpid(cpid, 0)
+  if status == 1280:
+   print("Restarting child process..")
+  print(status)
+  do_fork = (status == 1280)
